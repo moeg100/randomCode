@@ -37,3 +37,46 @@ def oddOrEven():
 		print(f"{number} is odd")
 		
 		
+
+#L2.1
+def FizzBuzz():
+	for i in range(1, 100):
+		if i % 3 == 0 and i % 5 == 0:
+			print(i, "FizzBuzz")
+		elif i % 5 == 0:
+			print(i, "Buzz")
+		elif i % 3 == 0:
+			print(i, "Fizz")
+			
+
+
+#L2.2
+def guessNumber():
+	number = random.randint(1, 100)
+	guessBool = True
+	while guessBool:
+		guess = int(input("Guess the number : "))
+		if guess == number:
+			print(f"You got it, number is {number}")
+			guessBool = False
+		elif guess > number:
+			print("Too High")
+		elif guess < number:
+			print("Too Low")
+			
+
+#L2.3
+
+def wordCountDict():
+	a = "apple orange blueberry apple apple grape apple orange"
+	listWords = a.split()
+	wordDict = {}
+	for word in listWords:
+		if word in wordDict:
+			wordDict[word] += 1
+		else:
+			wordDict[word] = 1
+	print(wordDict)
+
+wordCountDict()
+			
