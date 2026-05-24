@@ -80,3 +80,36 @@ def wordCountDict():
 
 
 			
+
+#L3
+def reverse_word(word):
+	reversed = ""
+	for letter in word:
+		reversed = letter + reversed
+	return reversed
+
+
+#print(reverse_word("noonracecarcivic"))
+	
+
+def is_palindrome(word):
+	return word == reverse_word(word)
+
+
+
+#print(is_palindrome("noon"))
+
+
+def check_all_palindrome(words):
+	for word in words:
+		if is_palindrome(word) == False:
+			return False
+		else:
+			return True
+
+words = ["night", "racecar", "civic"] # return false in check_all_palindrome
+
+words_2 = ["noon", "racecar", "civic"] # return true in check_all_palindrome
+
+#print(check_all_palindrome(words))
+
