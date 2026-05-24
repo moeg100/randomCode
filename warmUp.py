@@ -78,5 +78,5 @@ def wordCountDict():
 			wordDict[word] = 1
 	print(wordDict)
 
-wordCountDict()
+
 			
