@@ -113,3 +113,18 @@ words_2 = ["noon", "racecar", "civic"] # return true in check_all_palindrome
 
 #print(check_all_palindrome(words))
 
+
+
+def digit_freq_counter(n):
+	freq = {}
+	while n > 0:
+		digit = n % 10
+		if digit in freq:
+			freq[digit] += 1
+		else:
+			freq[digit] = 1
+		n = n // 10
+	return freq
+	
+#print(digit_freq_counter(29328))
+
