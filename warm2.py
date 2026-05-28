@@ -35,10 +35,10 @@ max_y = max([y for x, y in values.keys()])
 
 grid = []
 
-for x in range(max_x + 1):
+for y in range(max_y + 1):
 	row = []
 	
-	for y in range(max_y + 1):
+	for x in range(max_x + 1):
 		row.append(" ")
 	grid.append(row)
 
@@ -46,7 +46,7 @@ for x in range(max_x + 1):
 
 
 for (x, y), char in values.items():
-	grid[x][y] = char
+	grid[y][x] = char
 	
 	
 #print(grid)
