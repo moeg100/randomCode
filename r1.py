@@ -24,3 +24,15 @@ def fibo(n):
     
 for i in range(30):
     print(fibo(i))
+
+
+
+def countString(s):
+        count = 0
+        for i in s:
+                count += 1
+
+        return count
+        
+        
+print(countString("hello"))
