@@ -128,3 +128,13 @@ def digit_freq_counter(n):
 	
 #print(digit_freq_counter(29328))
 
+
+
+def gcd(a, b):
+	if a == 0:
+		return b
+	if b == 0:
+		return a
+	return gcd(b, a % b)
+	
+#print(gcd(24, 4))
