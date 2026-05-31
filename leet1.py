@@ -19,3 +19,28 @@ print(sol.twoSum([3, 2, 4], 6))
 print(sol.twoSum([3,3], 6))
 print(sol.twoSum([2,5,5,11], 10))
 print(sol.twoSum([3, 2, 3], 6))
+
+
+
+
+
+
+
+# RomanToInt
+
+class Solution:
+    def romanToInt(self, s):
+        numerical = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+    
+        total = 0
+    
+        for i in range(len(s)):
+            if i < (len(s) - 1) and numerical[s[i]] < numerical[s[i + 1]]:
+                total -= numerical[s[i]]
+            else:
+                total += numerical[s[i]]
+            
+        return total
+
+a = Solution()
+print(a.romanToInt("IIV"))
