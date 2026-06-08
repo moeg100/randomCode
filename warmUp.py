@@ -155,3 +155,14 @@ def triangleArea(base, height):
 	return (base * height) / 2
 	
 #print(triangleArea(3, 2))
+
+def to_binary(hexValue):
+	result = bin(hexValue)
+	result = result.strip("0b")
+	if len(result) > 8:
+		print("Only in 8 bit")
+    	return 0
+    
+    return result
+
+#print(to_binary(0xFF))
