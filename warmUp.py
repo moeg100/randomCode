@@ -138,3 +138,10 @@ def gcd(a, b):
 	return gcd(b, a % b)
 	
 #print(gcd(24, 4))
+
+
+
+def calAgeToDays(age):
+	return 365 * age
+
+#print(calAgeToDays(60))
