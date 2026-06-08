@@ -145,3 +145,13 @@ def calAgeToDays(age):
 	return 365 * age
 
 #print(calAgeToDays(60))
+
+def findPerimeterRect(l, w):
+	return 2 * (l + w)
+
+#print(findPerimeterRect(10, 20))
+
+def triangleArea(base, height):
+	return (base * height) / 2
+	
+#print(triangleArea(3, 2))
