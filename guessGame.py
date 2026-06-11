@@ -1,8 +1,8 @@
 import random 
 
 
-row = 2
-col = 2
+row = 3
+col = 4
 
 size = row * col
 
@@ -14,8 +14,8 @@ print(listNumbers)
 #getInput1 = int(input("Pick the first value"))
 #getInput2 = int(input("Guess the second value"))
 
-print(getInput1)
-print(getInput2)
+#print(getInput1)
+#print(getInput2)
 
 
 board = []
@@ -29,6 +29,7 @@ for i in range(row):
 print(board)
 
 
-for i in range(len(board)):
-	print(board[i])
+for i in range(len(board) - 1):
+	board[random.randint(0, len(listNumbers) - 1)] = listNumbers[i]
 
+print(board)
