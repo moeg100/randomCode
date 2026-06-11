@@ -30,6 +30,6 @@ print(board)
 
 
 for i in range(len(board) - 1):
-	board[random.randint(0, len(listNumbers) - 1)] = listNumbers[i]
+	board[random.randint(0, len(board) - 1)] = random.choice(listNumbers)
 
 print(board)
