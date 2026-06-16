@@ -18,18 +18,34 @@ print(listNumbers)
 #print(getInput2)
 
 
-board = []
+#board = []
+	
+board = [["[*]" for _ in range(col)] for _ in range(row)]
+"""
 for i in range(row):
 	for j in range(col):
 		print("[*]", end="")
-		board.append("[*]")
+		board.append(["[*]"])
 		
 	print("\n")
-	
-print(board)
+"""
+#print(board)
 
 
-for i in range(len(board) - 1):
-	board[random.randint(0, len(board) - 1)] = random.choice(listNumbers)
 
-print(board)
+numToReplaceLength = len(listNumbers)
+
+positions = random.sample(range(size), numToReplaceLength)
+
+print(positions)
+
+#for i in range(len(board) - 1):
+#	board[random.randint(0, len(board) - 1)] = random.choice(listNumbers)
+
+
+"""
+for 0rows in board:
+	for col in rows:	
+		print(f"{item:2}", end=" ")	
+	print("\n")
+"""
