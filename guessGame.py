@@ -19,6 +19,12 @@ print(listNumbers)
 
 
 #board = []
+
+pool = []
+
+for n in listNumbers:
+	pool += [n] * 2
+print(pool)
 	
 board = [["[*]" for _ in range(col)] for _ in range(row)]
 """
@@ -29,16 +35,52 @@ for i in range(row):
 		
 	print("\n")
 """
+
+for i in range(row):
+	for j in range(col):
+		print(board[i][j], end=" ")
+	print()
+		
 #print(board)
 
+	
+
+for i in range(row):
+	for j in range(col):
+		print(board[i][j], end=" ")
+	print()
+	
+	
+print("-" * 50)	
 
 
-numToReplaceLength = len(listNumbers)
+for r in range(row):
+    for c in range(col):
+        board[r][c] = random.choice(listNumbers)
 
-positions = random.sample(range(size), numToReplaceLength)
 
-print(positions)
 
+for i in range(row):
+	for j in range(col):
+		print(f"[{board[i][j]}]", end=" ")
+	print()
+	
+
+positions = random.sample(range(size), len(pool))
+
+for p, value in zip(positions, pool):
+	r = p // col
+	c = p % col
+	board[r][c] = value
+
+	
+print("-" * 50)	
+
+
+for i in range(row):
+	for j in range(col):
+		print(f"[{board[i][j]}]", end=" ")
+	print()
 #for i in range(len(board) - 1):
 #	board[random.randint(0, len(board) - 1)] = random.choice(listNumbers)
 
