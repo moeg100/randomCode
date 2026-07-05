@@ -166,3 +166,16 @@ def to_binary(hexValue):
     return result
 
 #print(to_binary(0xFF))
+
+
+# First Occurrence in String
+
+class Solution:
+    def strStr(self, haystack, needle):
+        return haystack.find(needle)
+
+
+
+a = Solution()
+a.strStr("needforspeed", "need")
+
