@@ -179,3 +179,30 @@ class Solution:
 a = Solution()
 a.strStr("needforspeed", "need")
 
+
+
+# Longest Common Prefix
+
+class Solution:
+    def longestCommonPrefix(self, strs: List[str]) -> str:
+        common = []
+        preFix = ""
+        v = 1
+        while True:
+            for st in strs:
+                common.append(st[:v])
+            if len(set(common)) <= 1:
+                if len(common[0]) == len(strs[0]):
+                    return common[0]
+                preFix = common[0]
+                common = []
+                v += 1
+            else:
+            	return preFix
+        return ""
+
+
+
+
+
+
