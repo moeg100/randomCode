@@ -42,7 +42,6 @@ while running:
     pygame.draw.circle(screen, (numRandom, numRandom2, numRandom3), player_pos, 40)
 
     pygame.gfxdraw.pixel(screen, 209, 140, (numRandom, numRandom2, numRandom3))
-s
 
 
     keys = pygame.key.get_pressed()
