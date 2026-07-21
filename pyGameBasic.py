@@ -24,7 +24,7 @@ clock = pygame.time.Clock()
 
 dt = 0
 
-
+pixel_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
 player_pos = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
@@ -41,19 +41,22 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: running = False
     
-    screen.fill(BG_COLOR)
 
 
     # Render start here
 
+
+    for _ in range(10):
+        numRandomPixelW = rd.randint(0, SCREEN_WIDTH)
+        numRandomPixelH = rd.randint(0, SCREEN_HEIGHT)
+        color = (rd.randint(0, 255), rd.randint(0, 255), rd.randint(0, 255))
+        pixel_surface.set_at((numRandomPixelW, numRandomPixelH), color)
+    screen.blit(pixel_surface, (0, 0))
+    
+    #screen.fill(BG_COLOR)
     pygame.draw.rect(screen, RECT_COLOR, (200, 150, 200, 100))
     pygame.draw.rect(screen, TARGET_COLOR, target_rect, width=3)
-
     pygame.draw.circle(screen, (numRandom, numRandom2, numRandom3), player_pos, 40)
-
-    pygame.gfxdraw.pixel(screen, 209, 140, (numRandom, numRandom2, numRandom3))
-
-
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_w]:
