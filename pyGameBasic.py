@@ -22,7 +22,7 @@ TARGET_COLOR = (66, 111, 232)
 BALL_RADIUS = 30
 GRAVITY = 0.5
 BOUNCE = -0.8
-GROUND_Y = 200
+GROUND_Y = 300
 
 # Display
 screen = pygame.display.set_mode(SCREEN_SIZE)
