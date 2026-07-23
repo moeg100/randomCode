@@ -10,7 +10,7 @@ SCREEN_HEIGHT = 300
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
 PLAYER_SPEED = 300
-FPS = 30
+FPS = 60
 
 RECT_POS = (200, 150)
 RECT_SIZE = (200, 100)
@@ -24,20 +24,20 @@ GRAVITY = 0.5
 BOUNCE = -0.8
 GROUND_Y = 300
 
-# Display
+# The main display
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 dt = 0
 
 pixel_surface = pygame.Surface(SCREEN_SIZE)
 
-# Player
-player_pos = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+# Ball 1
+ball_pos_1 = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
-# Target
+# Target rectangle
 target_rect = pygame.Rect(200, 50, 200, 100)
 
-# Ball
+# Ball 2 with gravity
 ball_x = 300
 ball_y = 100
 ball_velocity_y = 0
@@ -59,6 +59,7 @@ while running:
         random_pixel_x = rd.randint(0, SCREEN_WIDTH - 1)
         random_pixel_y = rd.randint(0, SCREEN_HEIGHT - 1)
 
+        # This draws the pixels color
         random_color = (
             rd.randint(0, 255),
             rd.randint(0, 255),
@@ -75,7 +76,7 @@ while running:
     pygame.draw.circle(
         screen,
         (random_r, random_g, random_b),
-        player_pos,
+        ball_pos_1,
         40,
     )
 
@@ -104,23 +105,25 @@ while running:
 
     keys = pygame.key.get_pressed()
 
-    if keys[pygame.K_w]:
-        player_pos.y -= PLAYER_SPEED * dt
+    if keys[pygame.K_SPACE]:
         ball_velocity_y -= GRAVITY
 
+    if keys[pygame.K_w]:
+        ball_pos_1.y -= PLAYER_SPEED * dt
+
     if keys[pygame.K_s]:
-        player_pos.y += PLAYER_SPEED * dt
+        ball_pos_1.y += PLAYER_SPEED * dt
 
     if keys[pygame.K_a]:
-        player_pos.x -= PLAYER_SPEED * dt
+        ball_pos_1.x -= PLAYER_SPEED * dt
 
     if keys[pygame.K_d]:
-        player_pos.x += PLAYER_SPEED * dt
+        ball_pos_1.x += PLAYER_SPEED * dt
 
-    player_pos.x = max(40, min(SCREEN_WIDTH - 40, player_pos.x))
-    player_pos.y = max(40, min(SCREEN_HEIGHT - 40, player_pos.y))
+    ball_pos_1.x = max(40, min(SCREEN_WIDTH - 40, ball_pos_1.x))
+    ball_pos_1.y = max(40, min(SCREEN_HEIGHT - 40, ball_pos_1.y))
 
-    if target_rect.collidepoint(player_pos):
+    if target_rect.collidepoint(ball_pos_1):
         print("Something is colliding.")
 
     pygame.display.flip()
