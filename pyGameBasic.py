@@ -2,6 +2,8 @@ import pygame
 import random as rd
 import sys
 
+import math as mth
+
 pygame.init()
 
 # Constants
@@ -19,7 +21,7 @@ BG_COLOR = (122, 52, 67)
 RECT_COLOR = (231, 55, 21)
 TARGET_COLOR = (66, 111, 232)
 
-BALL_RADIUS = 30
+BALL_RADIUS = 40
 GRAVITY = 0.5
 BOUNCE = -0.8
 GROUND_Y = 300
@@ -33,6 +35,8 @@ pixel_surface = pygame.Surface(SCREEN_SIZE)
 
 # Ball 1
 ball_pos_1 = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+
+print(ball_pos_1)
 
 # Target rectangle
 target_rect = pygame.Rect(200, 50, 200, 100)
@@ -87,6 +91,12 @@ while running:
     if ball_y + BALL_RADIUS >= GROUND_Y:
         ball_y = GROUND_Y - BALL_RADIUS
         ball_velocity_y *= BOUNCE
+
+    distance = mth.sqrt((ball_x - ball_pos_1[0])**2 + (ball_y - ball_pos_1[1])**2)
+    print(distance)
+    if distance < BALL_RADIUS*2:
+        print("COLLISION") #detecting collision
+
 
     pygame.draw.circle(
         screen,
