@@ -92,9 +92,18 @@ while running:
         ball_y = GROUND_Y - BALL_RADIUS
         ball_velocity_y *= BOUNCE
 
-    distance = mth.sqrt((ball_x - ball_pos_1[0])**2 + (ball_y - ball_pos_1[1])**2)
-    print(distance)
-    if distance < BALL_RADIUS*2:
+    #distance = mth.sqrt((ball_x - ball_pos_1.x)**2 + (ball_y - ball_pos_1.y)**2)
+    distance = (ball_x - ball_pos_1.x)**2 + (ball_y - ball_pos_1.y)**2
+
+    #print(distance)
+
+    distanceToMove = BALL_RADIUS + 40 - mth.sqrt(distance)
+
+    angle = (mth.atan2(ball_y-ball_pos_1.y, ball_x-ball_pos_1.x)) * (180/mth.pi)
+    print(angle)
+    # #print(distanceToMove)
+    #ball_x += mth.cos
+    if distance <= (BALL_RADIUS*2)**2:
         print("COLLISION") #detecting collision
 
 
@@ -138,7 +147,7 @@ while running:
 
     pygame.display.flip()
 
-    dt = clock.tick(FPS) / 1000
+    dt = clock.tick(FPS) / 10000
 
 pygame.quit()
 sys.exit()
