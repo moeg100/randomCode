@@ -21,7 +21,7 @@ BG_COLOR = (122, 52, 67)
 RECT_COLOR = (231, 55, 21)
 TARGET_COLOR = (66, 111, 232)
 
-BALL_RADIUS = 40
+BALL_RADIUS = 20
 GRAVITY = 0.5
 BOUNCE = -0.8
 GROUND_Y = 300
@@ -34,16 +34,19 @@ dt = 0
 pixel_surface = pygame.Surface(SCREEN_SIZE)
 
 # Ball 1
-ball_pos_1 = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+ball_one = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2) 
 
-print(ball_pos_1)
+# Ball 2 with gravity
+ball_two = pygame.Vector2(300, 200)
+ball_velocity_y = 0
+
+
+print(ball_one)
 
 # Target rectangle
 target_rect = pygame.Rect(200, 50, 200, 100)
 
-# Ball 2 with gravity
-ball_x = 300
-ball_y = 100
+
 ball_velocity_y = 0
 
 running = True
@@ -80,37 +83,46 @@ while running:
     pygame.draw.circle(
         screen,
         (random_r, random_g, random_b),
-        ball_pos_1,
-        40,
+        ball_one,
+        BALL_RADIUS,
     )
 
     # Ball physics
     ball_velocity_y += GRAVITY
-    ball_y += ball_velocity_y
+    ball_two.y += ball_velocity_y
 
-    if ball_y + BALL_RADIUS >= GROUND_Y:
-        ball_y = GROUND_Y - BALL_RADIUS
+    if ball_two.y + BALL_RADIUS >= GROUND_Y:
+        ball_two.y = GROUND_Y - BALL_RADIUS
         ball_velocity_y *= BOUNCE
 
-    #distance = mth.sqrt((ball_x - ball_pos_1.x)**2 + (ball_y - ball_pos_1.y)**2)
-    distance = (ball_x - ball_pos_1.x)**2 + (ball_y - ball_pos_1.y)**2
+    #distance = mth.sqrt((ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2)
+    distance = (ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2
 
     #print(distance)
 
-    distanceToMove = BALL_RADIUS + 40 - mth.sqrt(distance)
+    distanceToMove = BALL_RADIUS *2 - mth.sqrt(distance)
+    print(distanceToMove)
 
-    angle = (mth.atan2(ball_y-ball_pos_1.y, ball_x-ball_pos_1.x)) * (180/mth.pi)
-    print(angle)
+    angle = (mth.atan2(ball_two.y-ball_one.y, ball_two.x-ball_one.x))
+    #print(angle)
     # #print(distanceToMove)
-    #ball_x += mth.cos
+    #ball_two.x += mth.cos
+    """
     if distance <= (BALL_RADIUS*2)**2:
         print("COLLISION") #detecting collision
+        ball_two.x += mth.cos(angle) * distanceToMove
+        ball_two.y += mth.sin(angle) * distanceToMove
+    """
+    if not (distanceToMove < 0):
+    	print("COLLISION")
+    	ball_two.x += mth.cos(angle) * distanceToMove
+    	ball_two.y += mth.sin(angle) * distanceToMove
 
 
     pygame.draw.circle(
         screen,
         (255, 250, 50),
-        (ball_x, int(ball_y)),
+        (ball_two.x, int(ball_two.y)),
         BALL_RADIUS,
     )
 
@@ -128,26 +140,29 @@ while running:
         ball_velocity_y -= GRAVITY
 
     if keys[pygame.K_w]:
-        ball_pos_1.y -= PLAYER_SPEED * dt
+        ball_one.y -= PLAYER_SPEED * dt
 
     if keys[pygame.K_s]:
-        ball_pos_1.y += PLAYER_SPEED * dt
+        ball_one.y += PLAYER_SPEED * dt
 
     if keys[pygame.K_a]:
-        ball_pos_1.x -= PLAYER_SPEED * dt
+        ball_one.x -= PLAYER_SPEED * dt
 
     if keys[pygame.K_d]:
-        ball_pos_1.x += PLAYER_SPEED * dt
+        ball_one.x += PLAYER_SPEED * dt
+    if keys[pygame.K_r]:
+    	ball_two.x = 250
+    	ball_two.y = 250
 
-    ball_pos_1.x = max(40, min(SCREEN_WIDTH - 40, ball_pos_1.x))
-    ball_pos_1.y = max(40, min(SCREEN_HEIGHT - 40, ball_pos_1.y))
+    ball_one.x = max(BALL_RADIUS, min(SCREEN_WIDTH - 40, ball_one.x))
+    ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - 40, ball_one.y))
 
-    if target_rect.collidepoint(ball_pos_1):
+    if target_rect.collidepoint(ball_one):
         print("Something is colliding.")
 
     pygame.display.flip()
 
-    dt = clock.tick(FPS) / 10000
+    dt = clock.tick(FPS) / 1000
 
 pygame.quit()
 sys.exit()
