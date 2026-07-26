@@ -105,8 +105,9 @@ while running:
 
     angle = (mth.atan2(ball_two.y-ball_one.y, ball_two.x-ball_one.x))
     #print(angle)
-    # #print(distanceToMove)
-    #ball_two.x += mth.cos
+    
+
+
     """
     if distance <= (BALL_RADIUS*2)**2:
         print("COLLISION") #detecting collision
@@ -154,8 +155,8 @@ while running:
     	ball_two.x = 250
     	ball_two.y = 250
 
-    ball_one.x = max(BALL_RADIUS, min(SCREEN_WIDTH - 40, ball_one.x))
-    ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - 40, ball_one.y))
+    ball_one.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_one.x))
+    ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_one.y))
 
     if target_rect.collidepoint(ball_one):
         print("Something is colliding.")
