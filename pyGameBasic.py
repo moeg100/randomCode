@@ -34,7 +34,7 @@ dt = 0
 pixel_surface = pygame.Surface(SCREEN_SIZE)
 
 # Ball 1
-ball_one = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2) 
+ball_one = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
 # Ball 2 with gravity
 ball_two = pygame.Vector2(300, 200)
@@ -105,7 +105,7 @@ while running:
 
     angle = (mth.atan2(ball_two.y-ball_one.y, ball_two.x-ball_one.x))
     #print(angle)
-    
+
 
 
     """
@@ -137,6 +137,11 @@ while running:
 
     keys = pygame.key.get_pressed()
 
+    if keys[pygame.K_q]:
+        #sys.exit()
+        running = False
+
+
     if keys[pygame.K_SPACE]:
         ball_velocity_y -= GRAVITY
 
@@ -148,9 +153,13 @@ while running:
 
     if keys[pygame.K_a]:
         ball_one.x -= PLAYER_SPEED * dt
+        ball_two.x -= PLAYER_SPEED * dt
+
 
     if keys[pygame.K_d]:
         ball_one.x += PLAYER_SPEED * dt
+        ball_two.x += PLAYER_SPEED * dt
+
     if keys[pygame.K_r]:
     	ball_two.x = 250
     	ball_two.y = 250
