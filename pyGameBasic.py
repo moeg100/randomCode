@@ -26,6 +26,7 @@ GRAVITY = 0.5
 BOUNCE = -0.8
 GROUND_Y = 300
 
+
 # The main display
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
@@ -47,9 +48,38 @@ print(ball_one)
 target_rect = pygame.Rect(200, 50, 200, 100)
 
 
-ball_velocity_y = 0
-
 running = True
+
+def keyEvent():
+    keys = pygame.key.get_pressed()
+
+
+    if keys[pygame.K_q]:
+        sys.exit()
+
+    if keys[pygame.K_SPACE]:
+        global ball_velocity_y
+        ball_velocity_y -= GRAVITY
+
+    if keys[pygame.K_w]:
+        ball_one.y -= PLAYER_SPEED * dt
+
+    if keys[pygame.K_s]:
+        ball_one.y += PLAYER_SPEED * dt
+
+    if keys[pygame.K_a]:
+        ball_one.x -= PLAYER_SPEED * dt
+        ball_two.x -= PLAYER_SPEED * dt
+
+
+    if keys[pygame.K_d]:
+        ball_one.x += PLAYER_SPEED * dt
+        ball_two.x += PLAYER_SPEED * dt
+
+    if keys[pygame.K_r]:
+    	ball_two.x = 250
+    	ball_two.y = 250
+
 
 while running:
 
@@ -135,34 +165,7 @@ while running:
         3,
     )
 
-    keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_q]:
-        #sys.exit()
-        running = False
-
-
-    if keys[pygame.K_SPACE]:
-        ball_velocity_y -= GRAVITY
-
-    if keys[pygame.K_w]:
-        ball_one.y -= PLAYER_SPEED * dt
-
-    if keys[pygame.K_s]:
-        ball_one.y += PLAYER_SPEED * dt
-
-    if keys[pygame.K_a]:
-        ball_one.x -= PLAYER_SPEED * dt
-        ball_two.x -= PLAYER_SPEED * dt
-
-
-    if keys[pygame.K_d]:
-        ball_one.x += PLAYER_SPEED * dt
-        ball_two.x += PLAYER_SPEED * dt
-
-    if keys[pygame.K_r]:
-    	ball_two.x = 250
-    	ball_two.y = 250
+    keyEvent()
 
     ball_one.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_one.x))
     ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_one.y))
