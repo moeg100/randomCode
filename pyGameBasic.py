@@ -92,24 +92,27 @@ while running:
             running = False
 
     # Draw random pixels
-    for _ in range(10):
-        random_pixel_x = rd.randint(0, SCREEN_WIDTH - 1)
-        random_pixel_y = rd.randint(0, SCREEN_HEIGHT - 1)
+    random_pixel_x = rd.randint(0, SCREEN_WIDTH - 1)
+    random_pixel_y = rd.randint(0, SCREEN_HEIGHT - 1)
 
-        # This draws the pixels color
-        random_color = (
+    # This draws the pixels color
+    random_color = (
             rd.randint(0, 255),
             rd.randint(0, 255),
             rd.randint(0, 255),
         )
 
-        pixel_surface.set_at((random_pixel_x, random_pixel_y), random_color)
+    pixel_surface.set_at((random_pixel_x, random_pixel_y), random_color)
 
     screen.blit(pixel_surface, (0, 0))
 
+
+    # The two rectangles
     pygame.draw.rect(screen, RECT_COLOR, (*RECT_POS, *RECT_SIZE))
     pygame.draw.rect(screen, TARGET_COLOR, target_rect, width=3)
 
+
+    # Circle 1
     pygame.draw.circle(
         screen,
         (random_r, random_g, random_b),
@@ -149,7 +152,7 @@ while running:
     	ball_two.x += mth.cos(angle) * distanceToMove
     	ball_two.y += mth.sin(angle) * distanceToMove
 
-
+    # Circle 2
     pygame.draw.circle(
         screen,
         (255, 250, 50),
