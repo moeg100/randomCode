@@ -36,10 +36,10 @@ pixel_surface = pygame.Surface(SCREEN_SIZE)
 
 # Ball 1
 ball_one = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-
+ball_velocity_one = 0
 # Ball 2 with gravity
 ball_two = pygame.Vector2(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4)
-ball_velocity_y = 0
+ball_velocity_two = 0
 
 
 print(ball_one)
@@ -58,11 +58,12 @@ def keyEvent():
         sys.exit()
 
     if keys[pygame.K_SPACE]:
-        global ball_velocity_y
-        ball_velocity_y -= GRAVITY
+        global ball_velocity_two
+        ball_velocity_two -= GRAVITY
 
     if keys[pygame.K_w]:
-        ball_one.y -= PLAYER_SPEED * dt
+        global ball_velocity_one
+        ball_velocity_one -= GRAVITY
 
     if keys[pygame.K_s]:
         ball_one.y += PLAYER_SPEED * dt
@@ -121,12 +122,23 @@ while running:
     )
 
     # Ball physics
-    ball_velocity_y += GRAVITY
-    ball_two.y += ball_velocity_y
+    
+    ball_velocity_one += GRAVITY
+    ball_one.y += ball_velocity_one
 
+    ball_velocity_two += GRAVITY
+    ball_two.y += ball_velocity_two
+
+    if ball_one.y + BALL_RADIUS >= SCREEN_HEIGHT:
+        ball_one.y = SCREEN_HEIGHT - BALL_RADIUS
+        ball_velocity_one *= BOUNCE
+    	
+    	
     if ball_two.y + BALL_RADIUS >= SCREEN_HEIGHT:
         ball_two.y = SCREEN_HEIGHT - BALL_RADIUS
-        ball_velocity_y *= BOUNCE
+        ball_velocity_two *= BOUNCE
+        
+
 
     #distance = mth.sqrt((ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2)
     distance = (ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2
