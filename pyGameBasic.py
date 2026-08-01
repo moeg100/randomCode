@@ -24,7 +24,7 @@ TARGET_COLOR = (66, 111, 232)
 BALL_RADIUS = 20
 GRAVITY = 0.5
 BOUNCE = -0.8
-GROUND_Y = 300
+
 
 
 # The main display
@@ -38,7 +38,7 @@ pixel_surface = pygame.Surface(SCREEN_SIZE)
 ball_one = pygame.Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
 # Ball 2 with gravity
-ball_two = pygame.Vector2(300, 200)
+ball_two = pygame.Vector2(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4)
 ball_velocity_y = 0
 
 
@@ -124,8 +124,8 @@ while running:
     ball_velocity_y += GRAVITY
     ball_two.y += ball_velocity_y
 
-    if ball_two.y + BALL_RADIUS >= GROUND_Y:
-        ball_two.y = GROUND_Y - BALL_RADIUS
+    if ball_two.y + BALL_RADIUS >= SCREEN_HEIGHT:
+        ball_two.y = SCREEN_HEIGHT - BALL_RADIUS
         ball_velocity_y *= BOUNCE
 
     #distance = mth.sqrt((ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2)
@@ -160,25 +160,19 @@ while running:
         BALL_RADIUS,
     )
 
-    pygame.draw.line(
-        screen,
-        (255, 255, 255),
-        (0, GROUND_Y),
-        (SCREEN_WIDTH, GROUND_Y),
-        3,
-    )
-
     keyEvent()
 
     ball_one.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_one.x))
     ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_one.y))
-
+    ball_two.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_two.x))
+    ball_two.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_two.y))
+    
     if target_rect.collidepoint(ball_one):
         print("Something is colliding.")
 
     pygame.display.flip()
 
-    dt = clock.tick(FPS) / 1000
+    dt = clock.tick(FPS) / 5000
 
 pygame.quit()
 sys.exit()
