@@ -2,19 +2,46 @@ use std::io;
 use std::process::ExitCode;
 
 
+fn resolve(computer:String, player:String) -> bool{
+    if computer == "rock" && player == "paper"{
+        return true;
+    }
+    else if computer == "scissor" && player == "rock"{
+        return true;
+    }
+    else if computer == "paper" && player == "scissor"{
+        return true;
+    }
+    
+    else if computer == player{
+        println!("Its Tie");
+        return false;
+    }
+    
+    else{
+        return false;
+    }
+    
+}
+
 fn simple_s(input:String)-> String{
     let a = rand::random_range(1..4);
     println!("Input is : {input} and a is {a}");
     
     let answer = if a == 1 {
-        "Rock"
+        "rock"
     } else if a == 2 {
-        "Paper"
+        "paper"
     } else {
-        "Scissor"
+        "scissor"
     };
     
     println!("ANSWER IS : {answer}");
+    
+    
+    let result = resolve(answer.to_string(), input.clone());
+    println!("Result is {result}");
+    
     return input
 }
 
