@@ -24,7 +24,7 @@ fn resolve(computer:String, player:String) -> bool{
     
 }
 
-fn simple_s(input:String)-> String{
+fn simple_s(input:String)-> bool{
     let a = rand::random_range(1..4);
     println!("Input is : {input} and a is {a}");
     
@@ -42,12 +42,13 @@ fn simple_s(input:String)-> String{
     let result = resolve(answer.to_string(), input.clone());
     println!("Result is {result}");
     
-    return input
+    return result;
 }
 
 
 fn main() -> ExitCode {
 
+loop{
     let mut input = String::new();
     match io::stdin().read_line(&mut input) {
         Ok(_) => {
@@ -57,13 +58,29 @@ fn main() -> ExitCode {
                 println!("Input doesn't match the game words");
                 return ExitCode::from(42);
             }
-            simple_s(cleaned_input);
-            ExitCode::SUCCESS
-        }
-        Err(error) => {
-            println!("error: {error}");
-            ExitCode::FAILURE
+            if simple_s(cleaned_input) == true{
+                println!("Player Win");
+                continue;
             }
+            else{
+                
+                break Default::default();
+
+            }
+            
+           
+            
         }
+        
+         Err(error) => {
+            println!("error: {error}");
+            return ExitCode::FAILURE
+            }
+        
+        }
+        
+    }
+    
+
     }
  
