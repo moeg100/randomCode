@@ -50,16 +50,6 @@ target_rect = pygame.Rect(200, 50, 200, 100)
 
 running = True
 
-
-def circleRectCollide(circle, radius, rectangle):
-	x = max(rectangle.left, min(circle.x, rectangle.right))
-	y = max(rectangle.left, min(circle.y, rectangle.right))
-	
-	closest_point = pygame.Vector2(x, y)
-	distance = circle.distance_to(closest_point)
-	
-	return distance <= radius
-	
 	
 	
 
@@ -75,8 +65,7 @@ def keyEvent():
         ball_velocity_two -= GRAVITY
 
     if keys[pygame.K_w]:
-        global ball_velocity_one
-        ball_velocity_one -= GRAVITY
+       ball_one.y -= PLAYER_SPEED * dt
 
     if keys[pygame.K_s]:
         ball_one.y += PLAYER_SPEED * dt
@@ -123,7 +112,7 @@ while running:
 
     # The two rectangles
     pygame.draw.rect(screen, RECT_COLOR, (*RECT_POS, *RECT_SIZE))
-    pygame.draw.rect(screen, TARGET_COLOR, target_rect, width=3)
+    pygame.draw.rect(screen, TARGET_COLOR, target_rect)
 
 
     # Circle 1
@@ -136,15 +125,15 @@ while running:
 
     # Ball physics
     
-    ball_velocity_one += GRAVITY
-    ball_one.y += ball_velocity_one
-
+    #ball_velocity_one += GRAVITY
+    #ball_one.y += ball_velocity_one
+	
     ball_velocity_two += GRAVITY
     ball_two.y += ball_velocity_two
 
-    if ball_one.y + BALL_RADIUS >= SCREEN_HEIGHT:
-        ball_one.y = SCREEN_HEIGHT - BALL_RADIUS
-        ball_velocity_one *= BOUNCE
+    #if ball_one.y + BALL_RADIUS >= SCREEN_HEIGHT:
+    #    ball_one.y = SCREEN_HEIGHT - BALL_RADIUS
+    #    ball_velocity_one *= BOUNCE
     	
     	
     if ball_two.y + BALL_RADIUS >= SCREEN_HEIGHT:
@@ -162,14 +151,11 @@ while running:
     #print(distanceToMove)
 
     angle = (mth.atan2(ball_two.y-ball_one.y, ball_two.x-ball_one.x))
-    print(angle)
+
     
-   
+
     
-    # Circle and rectangle collision test
-    is_colliding = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
     
-    print(is_colliding)
 
 
 
@@ -180,7 +166,7 @@ while running:
         ball_two.y += mth.sin(angle) * distanceToMove
     """
     if not (distanceToMove < 0):
-    	print("COLLISION")
+    	#print("COLLISION")
     	ball_two.x += mth.cos(angle) * distanceToMove
     	ball_two.y += mth.sin(angle) * distanceToMove
 
@@ -202,6 +188,10 @@ while running:
     if target_rect.collidepoint(ball_one):
 
         print("Something is colliding.")
+    else:
+    	print("No colliding")
+        
+    
 
     pygame.display.flip()
 
