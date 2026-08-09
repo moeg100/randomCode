@@ -51,7 +51,14 @@ target_rect = pygame.Rect(200, 50, 200, 100)
 running = True
 
 	
+def circleRectCollide(circle, radius, rectangle):
+	x = max(rectangle.left, min(circle.x, rectangle.right))
+	y = max(rectangle.top, min(circle.y, rectangle.bottom))
 	
+	closest_point = pygame.Vector2(x, y)
+	distance = circle.distance_to(closest_point)
+	
+	return distance <= radius	
 
 def keyEvent():
     keys = pygame.key.get_pressed()
@@ -152,12 +159,6 @@ while running:
 
     angle = (mth.atan2(ball_two.y-ball_one.y, ball_two.x-ball_one.x))
 
-    
-
-    
-    
-
-
 
     """
     if distance <= (BALL_RADIUS*2)**2:
@@ -184,13 +185,13 @@ while running:
     ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_one.y))
     ball_two.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_two.x))
     ball_two.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_two.y))
-    
-    if target_rect.collidepoint(ball_one):
 
-        print("Something is colliding.")
-    else:
-    	print("No colliding")
-        
+    is_colliding = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
+    
+    print(is_colliding)
+    
+    if is_colliding == True:
+    	print("Now colliding")
     
 
     pygame.display.flip()
