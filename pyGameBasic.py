@@ -26,7 +26,6 @@ GRAVITY = 0.5
 BOUNCE = -0.8
 
 
-
 # The main display
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
@@ -45,24 +44,34 @@ ball_velocity_two = 0
 print(ball_one)
 
 # Target rectangle
-target_rect = pygame.Rect(200, 50, 200, 100)
+target_rect = pygame.Rect(200, 50, *RECT_SIZE)
 
 
 running = True
 
-	
 def circleRectCollide(circle, radius, rectangle):
-	x = max(rectangle.left, min(circle.x, rectangle.right))
-	y = max(rectangle.top, min(circle.y, rectangle.bottom))
-	
-	closest_point = pygame.Vector2(x, y)
-	distance = circle.distance_to(closest_point)
-	
-	return distance <= radius	
+    x = max(rectangle.left, min(circle.x, rectangle.right))
+    y = max(rectangle.top, min(circle.y, rectangle.bottom))
+
+    closest_point = pygame.Vector2(x, y)
+    delta = circle - closest_point
+    #print(f"DELTA : {delta}")
+    distance = delta.length()
+    print(distance)
+
+    is_colliding = distance <= radius
+
+    # normal from rect toward circle center (needed for push-out)
+    if distance != 0:
+        normal = delta / distance
+    else:
+        normal = pygame.Vector2(0, -1)  # arbitrary fallback (corner case)
+
+    return is_colliding, distance, normal
+
 
 def keyEvent():
     keys = pygame.key.get_pressed()
-
 
     if keys[pygame.K_q]:
         sys.exit()
@@ -72,7 +81,7 @@ def keyEvent():
         ball_velocity_two -= GRAVITY
 
     if keys[pygame.K_w]:
-       ball_one.y -= PLAYER_SPEED * dt
+        ball_one.y -= PLAYER_SPEED * dt
 
     if keys[pygame.K_s]:
         ball_one.y += PLAYER_SPEED * dt
@@ -81,14 +90,13 @@ def keyEvent():
         ball_one.x -= PLAYER_SPEED * dt
         ball_two.x -= PLAYER_SPEED * dt
 
-
     if keys[pygame.K_d]:
         ball_one.x += PLAYER_SPEED * dt
         ball_two.x += PLAYER_SPEED * dt
 
     if keys[pygame.K_r]:
-    	ball_two.x = 250
-    	ball_two.y = 250
+        ball_two.x = 250
+        ball_two.y = 250
 
 
 while running:
@@ -107,20 +115,18 @@ while running:
 
     # This draws the pixels color
     random_color = (
-            rd.randint(0, 255),
-            rd.randint(0, 255),
-            rd.randint(0, 255),
-        )
+        rd.randint(0, 255),
+        rd.randint(0, 255),
+        rd.randint(0, 255),
+    )
 
     pixel_surface.set_at((random_pixel_x, random_pixel_y), random_color)
 
     screen.blit(pixel_surface, (0, 0))
 
-
     # The two rectangles
     pygame.draw.rect(screen, RECT_COLOR, (*RECT_POS, *RECT_SIZE))
     pygame.draw.rect(screen, TARGET_COLOR, target_rect)
-
 
     # Circle 1
     pygame.draw.circle(
@@ -131,34 +137,30 @@ while running:
     )
 
     # Ball physics
-    
-    #ball_velocity_one += GRAVITY
-    #ball_one.y += ball_velocity_one
-	
+
+    # ball_velocity_one += GRAVITY
+    # ball_one.y += ball_velocity_one
+
     ball_velocity_two += GRAVITY
     ball_two.y += ball_velocity_two
 
-    #if ball_one.y + BALL_RADIUS >= SCREEN_HEIGHT:
-    #    ball_one.y = SCREEN_HEIGHT - BALL_RADIUS
-    #    ball_velocity_one *= BOUNCE
-    	
-    	
+    # if ball_one.y + BALL_RADIUS >= SCREEN_HEIGHT:
+    #     ball_one.y = SCREEN_HEIGHT - BALL_RADIUS
+    #     ball_velocity_one *= BOUNCE
+
     if ball_two.y + BALL_RADIUS >= SCREEN_HEIGHT:
         ball_two.y = SCREEN_HEIGHT - BALL_RADIUS
         ball_velocity_two *= BOUNCE
-        
 
+    # distance = mth.sqrt((ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2)
+    distance = (ball_two.x - ball_one.x) ** 2 + (ball_two.y - ball_one.y) ** 2
 
-    #distance = mth.sqrt((ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2)
-    distance = (ball_two.x - ball_one.x)**2 + (ball_two.y - ball_one.y)**2
+    # print(distance)
 
-    #print(distance)
+    distanceToMove = BALL_RADIUS * 2 - mth.sqrt(distance)
+    # print(distanceToMove)
 
-    distanceToMove = BALL_RADIUS *2 - mth.sqrt(distance)
-    #print(distanceToMove)
-
-    angle = (mth.atan2(ball_two.y-ball_one.y, ball_two.x-ball_one.x))
-
+    angle = mth.atan2(ball_two.y - ball_one.y, ball_two.x - ball_one.x)
 
     """
     if distance <= (BALL_RADIUS*2)**2:
@@ -167,9 +169,9 @@ while running:
         ball_two.y += mth.sin(angle) * distanceToMove
     """
     if not (distanceToMove < 0):
-    	#print("COLLISION")
-    	ball_two.x += mth.cos(angle) * distanceToMove
-    	ball_two.y += mth.sin(angle) * distanceToMove
+        # print("COLLISION")
+        ball_two.x += mth.cos(angle) * distanceToMove
+        ball_two.y += mth.sin(angle) * distanceToMove
 
     # Circle 2
     pygame.draw.circle(
@@ -186,13 +188,14 @@ while running:
     ball_two.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_two.x))
     ball_two.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_two.y))
 
-    is_colliding = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
-    
+    #is_colliding = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
+    is_colliding, distance, normal = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
+
     print(is_colliding)
-    
-    if is_colliding == True:
-    	print("Now colliding")
-    
+
+    if is_colliding:
+        penetration = BALL_RADIUS - distance
+        ball_one += normal * penetration
 
     pygame.display.flip()
 
