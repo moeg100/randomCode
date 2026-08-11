@@ -1,10 +1,10 @@
 from pathlib import Path
 
-INPUT_FOLDER = r"~/" # Here specifiy the path
+INPUT_FOLDER = input("Enter the path : ")
 
-folder = Path(INPUT_FOLDER)
+folder = Path(INPUT_FOLDER).expanduser().resolve()
 
-if not folder.exists():
+if not folder.exists() or not folder.is_dir():
     raise FileNotFoundError(INPUT_FOLDER)
 
 files = sorted(
@@ -12,9 +12,11 @@ files = sorted(
     key=lambda f: f.name.lower()
 )
 
+
 number = 1
 
 for file in files:
+    suffix = "".join(file.suffixes)
     while (folder / f"{number}{file.suffix}").exists():
         number += 1
 
