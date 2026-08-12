@@ -189,14 +189,18 @@ while running:
     ball_two.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_two.y))
 
     #is_colliding = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
-    is_colliding, distance, normal = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
+    is_colliding_one, distance, normal = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
+    is_colliding_two, distance2, normal2 = circleRectCollide(ball_two, BALL_RADIUS, target_rect)
+    #print(is_colliding)
 
-    print(is_colliding)
-
-    if is_colliding:
+    if is_colliding_one:
         penetration = BALL_RADIUS - distance
         ball_one += normal * penetration
-
+        
+    if is_colliding_two:
+        penetration_2 = BALL_RADIUS - distance2
+        ball_two += normal2 * penetration_2
+        
     pygame.display.flip()
 
     dt = clock.tick(FPS) / 5000
