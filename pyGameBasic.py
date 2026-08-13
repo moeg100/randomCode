@@ -41,7 +41,7 @@ ball_two = pygame.Vector2(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4)
 ball_velocity_two = 0
 
 
-print(ball_one)
+
 
 # Target rectangle
 target_rect = pygame.Rect(200, 50, *RECT_SIZE)
@@ -57,7 +57,7 @@ def circleRectCollide(circle, radius, rectangle):
     delta = circle - closest_point
     #print(f"DELTA : {delta}")
     distance = delta.length()
-    print(distance)
+
 
     is_colliding = distance <= radius
 
@@ -108,10 +108,17 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+            
 
-    # Draw random pixels
-    random_pixel_x = rd.randint(0, SCREEN_WIDTH - 1)
-    random_pixel_y = rd.randint(0, SCREEN_HEIGHT - 1)
+    # Draw random pixels if left mouse pressed
+    if pygame.mouse.get_pressed()[0] == True:
+        mousePixel_X = rd.randint(0, SCREEN_WIDTH - 1)
+        mousePixel_Y = rd.randint(0, SCREEN_HEIGHT - 1)
+    
+    # Draw pixels based on mouse position
+    else:
+    	mousePixel_X, mousePixel_Y = pygame.mouse.get_pos()
+    
 
     # This draws the pixels color
     random_color = (
@@ -120,7 +127,7 @@ while running:
         rd.randint(0, 255),
     )
 
-    pixel_surface.set_at((random_pixel_x, random_pixel_y), random_color)
+    pixel_surface.set_at((mousePixel_X, mousePixel_Y), random_color)
 
     screen.blit(pixel_surface, (0, 0))
 
@@ -192,6 +199,9 @@ while running:
     is_colliding_one, distance, normal = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
     is_colliding_two, distance2, normal2 = circleRectCollide(ball_two, BALL_RADIUS, target_rect)
     #print(is_colliding)
+    
+
+
 
     if is_colliding_one:
         penetration = BALL_RADIUS - distance
