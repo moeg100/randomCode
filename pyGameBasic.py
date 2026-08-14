@@ -17,7 +17,7 @@ FPS = 60
 RECT_POS = (200, 150)
 RECT_SIZE = (200, 100)
 
-BG_COLOR = (122, 52, 67)
+BG_COLOR = (0, 0, 0)
 RECT_COLOR = (231, 55, 21)
 TARGET_COLOR = (66, 111, 232)
 
@@ -69,6 +69,15 @@ def circleRectCollide(circle, radius, rectangle):
 
     return is_colliding, distance, normal
 
+def erase_pixels_under_ball(surface, ball_pos, radius, bg_color):
+    bx, by = int(ball_pos.x), int(ball_pos.y)
+
+    for x in range(bx - radius, bx + radius + 1):
+        for y in range(by - radius, by + radius + 1):
+            if 0 <= x < SCREEN_WIDTH and 0 <= y < SCREEN_HEIGHT:
+                if (x - bx) ** 2 + (y - by) ** 2 <= radius ** 2:
+                    if surface.get_at((x, y))[:3] != bg_color:
+                        surface.set_at((x, y), bg_color)
 
 def keyEvent():
     keys = pygame.key.get_pressed()
@@ -189,6 +198,8 @@ while running:
     )
 
     keyEvent()
+    erase_pixels_under_ball(pixel_surface, ball_two, BALL_RADIUS, BG_COLOR)
+    erase_pixels_under_ball(pixel_surface, ball_one, BALL_RADIUS, BG_COLOR)
 
     ball_one.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_one.x))
     ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_one.y))
