@@ -25,7 +25,8 @@ BALL_RADIUS = 5
 GRAVITY = 0.5
 BOUNCE = -0.8
 
-SMALL_TRIANGLE = [(100,150),(120,150),(110,175)]
+SMALL_TRIANGLE = [[100,150],[120,150],[110,175]]
+ROTATION_SPEED = 1
 
 
 # The main display
@@ -80,6 +81,12 @@ def erase_pixels_under_ball(surface, ball_pos, radius, bg_color):
                 if (x - bx) ** 2 + (y - by) ** 2 <= radius ** 2:
                     if surface.get_at((x, y))[:3] != bg_color:
                         surface.set_at((x, y), bg_color)
+
+def rotate(angle, point, origin):
+    x = ((point[0] - origin[0]) * mth.cos(angle) - (point[1] - origin[1]) * mth.sin(angle)) + origin[0]
+    y = ((point[0] - origin[0]) * mth.sin(angle) + (point[1] - origin[1]) * mth.cos(angle)) + origin[1]
+
+    point[0], point[1] = x, y
 
 def keyEvent():
     keys = pygame.key.get_pressed()
@@ -224,6 +231,13 @@ while running:
         penetration_2 = BALL_RADIUS - distance2
         ball_two += normal2 * penetration_2
 
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_l]:
+        triangle_angle = -ROTATION_SPEED
+        for point in SMALL_TRIANGLE:
+            rotate(triangle_angle, point, origin=[150, 150])
+
 
     a = pygame.draw.polygon(screen, (0, 255, 255), SMALL_TRIANGLE)
 
@@ -231,7 +245,7 @@ while running:
 
     pygame.display.flip()
 
-    dt = clock.tick(FPS) / 5000
+    dt = clock.tick(FPS) / 1000
 
 pygame.quit()
 sys.exit()
