@@ -21,9 +21,11 @@ BG_COLOR = (0, 0, 0)
 RECT_COLOR = (231, 55, 21)
 TARGET_COLOR = (66, 111, 232)
 
-BALL_RADIUS = 20
+BALL_RADIUS = 5
 GRAVITY = 0.5
 BOUNCE = -0.8
+
+SMALL_TRIANGLE = [(100,150),(120,150),(110,175)]
 
 
 # The main display
@@ -117,17 +119,17 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-            
+
 
     # Draw random pixels if left mouse pressed
     if pygame.mouse.get_pressed()[0] == True:
         mousePixel_X = rd.randint(0, SCREEN_WIDTH - 1)
         mousePixel_Y = rd.randint(0, SCREEN_HEIGHT - 1)
-    
+
     # Draw pixels based on mouse position
     else:
     	mousePixel_X, mousePixel_Y = pygame.mouse.get_pos()
-    
+
 
     # This draws the pixels color
     random_color = (
@@ -210,18 +212,23 @@ while running:
     is_colliding_one, distance, normal = circleRectCollide(ball_one, BALL_RADIUS, target_rect)
     is_colliding_two, distance2, normal2 = circleRectCollide(ball_two, BALL_RADIUS, target_rect)
     #print(is_colliding)
-    
+
 
 
 
     if is_colliding_one:
         penetration = BALL_RADIUS - distance
         ball_one += normal * penetration
-        
+
     if is_colliding_two:
         penetration_2 = BALL_RADIUS - distance2
         ball_two += normal2 * penetration_2
-        
+
+
+    a = pygame.draw.polygon(screen, (0, 255, 255), SMALL_TRIANGLE)
+
+
+
     pygame.display.flip()
 
     dt = clock.tick(FPS) / 5000
