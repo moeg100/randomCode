@@ -115,6 +115,11 @@ def keyEvent():
     if keys[pygame.K_r]:
         ball_two.x = 250
         ball_two.y = 250
+        
+    if keys[pygame.K_l]:
+        triangle_angle = -ROTATION_SPEED
+        for point in SMALL_TRIANGLE:
+            rotate(triangle_angle, point, origin=[110, 120])
 
 
 while running:
@@ -231,15 +236,9 @@ while running:
         penetration_2 = BALL_RADIUS - distance2
         ball_two += normal2 * penetration_2
 
-    keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_l]:
-        triangle_angle = -ROTATION_SPEED
-        for point in SMALL_TRIANGLE:
-            rotate(triangle_angle, point, origin=[150, 150])
 
 
-    a = pygame.draw.polygon(screen, (0, 255, 255), SMALL_TRIANGLE)
+    pygame.draw.polygon(screen, (0, 255, 255), SMALL_TRIANGLE)
 
 
 
