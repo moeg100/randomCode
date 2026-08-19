@@ -27,7 +27,7 @@ BOUNCE = -0.8
 
 SMALL_TRIANGLE = [[100,150],[120,150],[110,175]]
 ROTATION_SPEED = 1
-
+TRIANGLE_ORIGIN = [rd.randint(100, 200), rd.randint(100, 200)]
 
 # The main display
 screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -81,6 +81,21 @@ def erase_pixels_under_ball(surface, ball_pos, radius, bg_color):
                 if (x - bx) ** 2 + (y - by) ** 2 <= radius ** 2:
                     if surface.get_at((x, y))[:3] != bg_color:
                         surface.set_at((x, y), bg_color)
+                        
+          
+def triangle_area(triangle_pos):
+    ax, ay = int(triangle_pos[0][0]), int(triangle_pos[0][1])
+    bx, by = int(triangle_pos[1][0]), int(triangle_pos[1][1])
+    cx, cy = int(triangle_pos[2][0]), int(triangle_pos[2][1])
+    
+    area = 0.5 * abs(ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
+    
+    return area
+                  
+def erase_pixels_under_triable(surface, triangle_pos):
+    a = triangle_area(triangle_pos)
+    
+    print(f"AREA: {a}")
 
 def rotate(angle, point, origin):
     x = ((point[0] - origin[0]) * mth.cos(angle) - (point[1] - origin[1]) * mth.sin(angle)) + origin[0]
@@ -89,6 +104,7 @@ def rotate(angle, point, origin):
     point[0], point[1] = x, y
 
 def keyEvent():
+    global TRIANGLE_ORIGIN
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_q]:
@@ -119,7 +135,10 @@ def keyEvent():
     if keys[pygame.K_l]:
         triangle_angle = -ROTATION_SPEED
         for point in SMALL_TRIANGLE:
-            rotate(triangle_angle, point, origin=[110, 120])
+            rotate(triangle_angle, point, origin=TRIANGLE_ORIGIN)
+     
+    if keys[pygame.K_n]:
+        TRIANGLE_ORIGIN = [rd.randint(100, 250), rd.randint(150, 350)]
 
 
 while running:
@@ -239,6 +258,7 @@ while running:
 
 
     pygame.draw.polygon(screen, (0, 255, 255), SMALL_TRIANGLE)
+    erase_pixels_under_triable(pixel_surface, SMALL_TRIANGLE)
 
 
 
