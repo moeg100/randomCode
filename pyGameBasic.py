@@ -92,10 +92,37 @@ def triangle_area(triangle_pos):
     
     return area
                   
-def erase_pixels_under_triable(surface, triangle_pos):
-    a = triangle_area(triangle_pos)
+def erase_pixels_under_triangle(surface, triangle_pos, bg_color):
+    ax, ay = triangle_pos[0]
+    bx, by = triangle_pos[1]
+    cx, cy = triangle_pos[2]
+
+
+    min_x = max(0, int(min(ax, bx, cx)))
+    max_x = min(SCREEN_WIDTH - 1, int(max(ax, bx, cx)))
+    min_y = max(0, int(min(ay, by, cy)))
+    max_y = min(SCREEN_HEIGHT - 1, int(max(ay, by, cy)))
+
+
+    total_area = triangle_area(triangle_pos)
     
-    print(f"AREA: {a}")
+    if total_area == 0:
+        return
+
+
+    for x in range(min_x, max_x + 1):
+        for y in range(min_y, max_y + 1):
+
+            p = [[x, y], triangle_pos[1], triangle_pos[2]]
+            p2 = [triangle_pos[0], [x, y], triangle_pos[2]]
+            p3 = [triangle_pos[0], triangle_pos[1], [x, y]]
+            
+            sub_area_sum = triangle_area(p) + triangle_area(p2) + triangle_area(p3)
+            
+
+            if abs(sub_area_sum - total_area) < 0.1:
+                if surface.get_at((x, y))[:3] != bg_color:
+                    surface.set_at((x, y), bg_color)
 
 def rotate(angle, point, origin):
     x = ((point[0] - origin[0]) * mth.cos(angle) - (point[1] - origin[1]) * mth.sin(angle)) + origin[0]
@@ -133,12 +160,13 @@ def keyEvent():
         ball_two.y = 250
         
     if keys[pygame.K_l]:
-        triangle_angle = -ROTATION_SPEED
+        triangle_angle = -ROTATION_SPEED*0.03
         for point in SMALL_TRIANGLE:
             rotate(triangle_angle, point, origin=TRIANGLE_ORIGIN)
      
     if keys[pygame.K_n]:
-        TRIANGLE_ORIGIN = [rd.randint(100, 250), rd.randint(150, 350)]
+        TRIANGLE_ORIGIN = [rd.randint(110, 250), rd.randint(125, 250)]
+
 
 
 while running:
@@ -258,7 +286,7 @@ while running:
 
 
     pygame.draw.polygon(screen, (0, 255, 255), SMALL_TRIANGLE)
-    erase_pixels_under_triable(pixel_surface, SMALL_TRIANGLE)
+    erase_pixels_under_triangle(pixel_surface, SMALL_TRIANGLE, BG_COLOR)
 
 
 
