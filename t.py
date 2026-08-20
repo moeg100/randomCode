@@ -1,24 +1,41 @@
 from PIL import Image
-
-in_path = "input.png"      # change me
-out_path = "output_1080x720.png"
+import argparse
+from pathlib import Path
 
 target_w, target_h = 1080, 720
-pad_color = (255, 255, 255)  # white padding
+pad_color = (255, 255, 255, 255)
 
-img = Image.open(in_path).convert("RGBA")
+parser = argparse.ArgumentParser()
+parser.add_argument("input", help="Input image path")
+parser.add_argument("-o", "--output", help="Output image path")
+args = parser.parse_args()
 
-# Fit inside target while preserving aspect ratio
-scale = min(target_w / img.width, target_h / img.height)
-new_w = int(round(img.width * scale))
-new_h = int(round(img.height * scale))
-resized = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+in_path = Path(args.input)
 
-# Create canvas and center
-canvas = Image.new("RGBA", (target_w, target_h), pad_color + (255,))
-x = (target_w - new_w) // 2
-y = (target_h - new_h) // 2
-canvas.paste(resized, (x, y), resized)
+if not in_path.is_file():
+    parser.error(f"Input file not found: {in_path}")
 
-canvas.save(out_path)
-print("Saved:", out_path)
+out_path = Path(args.output) if args.output else in_path.with_name(
+    f"{in_path.stem}_1080x720.png"
+)
+
+with Image.open(in_path) as img:
+    img = img.convert("RGBA")
+
+    scale = min(target_w / img.width, target_h / img.height)
+    new_size = (
+        round(img.width * scale),
+        round(img.height * scale)
+    )
+
+    resized = img.resize(new_size, Image.Resampling.LANCZOS)
+
+    canvas = Image.new("RGBA", (target_w, target_h), pad_color)
+
+    x = (target_w - resized.width) // 2
+    y = (target_h - resized.height) // 2
+
+    canvas.paste(resized, (x, y), resized)
+    canvas.save(out_path, "PNG")
+
+print(f"Saved: {out_path}")
