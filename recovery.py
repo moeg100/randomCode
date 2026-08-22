@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+import argparse
 import os
-import sys
+import signal
 import shutil
 import subprocess
+import sys
+import time
 from pathlib import Path
 
 try:
@@ -11,204 +14,551 @@ try:
 except ImportError:
     tk = None
 
-def which_or_raise(cmd):
-    p = shutil.which(cmd)
-    if not p:
-        raise RuntimeError(f"Missing required tool: {cmd}. Install it and re-run.")
-    return p
 
-def run(cmd):
-    print("\nRunning:\n  " + " ".join(map(str, cmd)))
-    subprocess.run(cmd, check=True)
+def which_or_raise(cmd: str) -> str:
+    path = shutil.which(cmd)
+    if not path:
+        raise RuntimeError(
+            f"Required tool '{cmd}' was not found in PATH. Install it and try again."
+        )
+    return path
+
+
+def is_root() -> bool:
+    return hasattr(os, "geteuid") and os.geteuid() == 0
+
+
+def root_cmd(cmd):
+    if is_root():
+        return list(map(str, cmd))
+
+    which_or_raise("sudo")
+    return ["sudo", *map(str, cmd)]
+
+
+def run(cmd, capture_output=False):
+    cmd = list(map(str, cmd))
+
+    print("\nRunning:")
+    print("  " + " ".join(subprocess.list2cmdline([x]) for x in cmd))
+
+    return subprocess.run(
+        cmd,
+        check=True,
+        text=True,
+        capture_output=capture_output,
+    )
+
 
 def pick_file_gui(title="Select input"):
     if tk is None:
         return None
+
     root = tk.Tk()
     root.withdraw()
-    f = filedialog.askopenfilename(title=title, filetypes=[("All files", "*.*")])
-    root.destroy()
-    return f or None
+
+    try:
+        selected = filedialog.askopenfilename(
+            title=title,
+            filetypes=[("All files", "*.*")],
+        )
+        return selected or None
+    finally:
+        root.destroy()
+
 
 def ask_choice_gui(title, prompt, options):
     if tk is None:
         return None
+
     root = tk.Tk()
     root.withdraw()
-    ans = simpledialog.askstring(title, prompt + "\nOptions: " + ", ".join(options))
-    root.destroy()
-    return ans.strip().lower() if ans else None
 
-def ffmpeg_repair_mp4(input_path: Path, output_path: Path):
+    try:
+        answer = simpledialog.askstring(
+            title,
+            prompt + "\nOptions: " + ", ".join(options),
+        )
+        return answer.strip().lower() if answer else None
+    finally:
+        root.destroy()
+
+
+def ffmpeg_repair_mp4(input_path: Path, output_path: Path) -> str:
     which_or_raise("ffmpeg")
+
+    input_path = input_path.expanduser().resolve()
+    output_path = output_path.expanduser().resolve()
+
+    if not input_path.is_file():
+        raise FileNotFoundError(f"Input MP4 not found: {input_path}")
+
+    if input_path == output_path:
+        raise ValueError("Input and output MP4 must be different files.")
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    cmd1 = [
-        "ffmpeg", "-hide_banner", "-loglevel", "warning",
-        "-err_detect", "ignore_err",
-        "-i", str(input_path),
-        "-c", "copy",
-        "-movflags", "+faststart",
+    remux_cmd = [
+        "ffmpeg",
+        "-hide_banner",
+        "-loglevel",
+        "warning",
+        "-y",
+        "-err_detect",
+        "ignore_err",
+        "-i",
+        str(input_path),
+        "-map",
+        "0",
+        "-c",
+        "copy",
+        "-movflags",
+        "+faststart",
         str(output_path),
     ]
+
     try:
-        run(cmd1)
+        run(remux_cmd)
         return "remux_ok"
-    except subprocess.CalledProcessError:
-        tmp = output_path.with_name(output_path.stem + "_reencoded" + output_path.suffix)
-        cmd2 = [
-            "ffmpeg", "-hide_banner", "-loglevel", "warning",
-            "-err_detect", "ignore_err",
-            "-i", str(input_path),
-            "-c:v", "libx264",
-            "-c:a", "aac",
-            "-movflags", "+faststart",
-            str(tmp),
-        ]
-        run(cmd2)
-        tmp.replace(output_path)
-        return "reencode_ok"
+    except subprocess.CalledProcessError as remux_error:
+        print(
+            "\nStream-copy remux failed; trying a full re-encode.",
+            file=sys.stderr,
+        )
+
+        try:
+            output_path.unlink()
+        except FileNotFoundError:
+            pass
+
+        reencoded = output_path.with_name(
+            output_path.stem + "_reencoded" + output_path.suffix
+        )
+
+        try:
+            reencode_cmd = [
+                "ffmpeg",
+                "-hide_banner",
+                "-loglevel",
+                "warning",
+                "-y",
+                "-err_detect",
+                "ignore_err",
+                "-i",
+                str(input_path),
+                "-map",
+                "0:v:0?",
+                "-map",
+                "0:a:0?",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "medium",
+                "-crf",
+                "18",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "192k",
+                "-movflags",
+                "+faststart",
+                str(reencoded),
+            ]
+
+            run(reencode_cmd)
+
+            reencoded.replace(output_path)
+            return "reencode_ok"
+
+        except Exception:
+            try:
+                reencoded.unlink()
+            except FileNotFoundError:
+                pass
+
+            raise RuntimeError(
+                "Both MP4 repair attempts failed. "
+                "The source may be too damaged for ffmpeg to decode."
+            ) from remux_error
+
 
 def setup_loop_from_img(img_path: Path) -> str:
-    """
-    Turns an image file into a loop device with partition scanning.
-    Returns the base loop device path like /dev/loop7.
-    """
     which_or_raise("losetup")
+
     img_path = img_path.expanduser().resolve()
-    # Create a loop device with --partscan so /dev/loopXpY appears
-    cmd = ["sudo", "losetup", "--find", "--partscan", "--show", str(img_path)]
-    res = subprocess.check_output(cmd, text=True).strip()
-    return res  # e.g. /dev/loop7
 
-def cleanup_loop(loop_dev: str):
-    """
-    Detach loop device (best effort).
-    """
-    which_or_raise("losetup")
+    if not img_path.is_file():
+        raise FileNotFoundError(f"Image not found: {img_path}")
+
+    cmd = root_cmd([
+        "losetup",
+        "--find",
+        "--partscan",
+        "--show",
+        str(img_path),
+    ])
+
+    result = subprocess.run(
+        cmd,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+
+    loop_dev = result.stdout.strip()
+
+    if not loop_dev:
+        raise RuntimeError(
+            "losetup succeeded but did not return a loop device."
+        )
+
+    print(f"Attached image to: {loop_dev}")
+    return loop_dev
+
+
+def cleanup_loop(loop_dev):
+    if not loop_dev:
+        return
+
     try:
-        run(["sudo", "losetup", "-d", loop_dev])
-    except subprocess.CalledProcessError:
-        pass
+        which_or_raise("losetup")
+    except RuntimeError:
+        return
 
-def choose_partition(loop_dev: str, partition_number: int | None) -> str:
-    """
-    If partition_number is provided, use /dev/loopXpY.
-    Otherwise pick the first existing /dev/loopXpY.
-    """
-    base = loop_dev  # /dev/loop7
+    try:
+        run(root_cmd(["losetup", "-d", loop_dev]))
+    except subprocess.CalledProcessError as exc:
+        print(
+            f"Warning: could not detach {loop_dev}: {exc}",
+            file=sys.stderr,
+        )
+
+
+def wait_for_path(path: Path, timeout: float = 5.0) -> bool:
+    deadline = time.monotonic() + timeout
+
+    while time.monotonic() < deadline:
+        if path.exists():
+            return True
+        time.sleep(0.2)
+
+    return path.exists()
+
+
+def get_device_type(device: str):
+    which_or_raise("blkid")
+
+    result = subprocess.run(
+        root_cmd([
+            "blkid",
+            "-o",
+            "value",
+            "-s",
+            "TYPE",
+            device,
+        ]),
+        text=True,
+        capture_output=True,
+    )
+
+    if result.returncode != 0:
+        return None
+
+    value = result.stdout.strip()
+    return value or None
+
+
+def is_mounted(device: str) -> bool:
+    if not shutil.which("findmnt"):
+        return False
+
+    result = subprocess.run(
+        root_cmd(["findmnt", "-rn", "-S", device]),
+        text=True,
+        capture_output=True,
+    )
+
+    return result.returncode == 0 and bool(result.stdout.strip())
+
+
+def choose_partition(loop_dev: str, partition_number):
     if partition_number is not None:
-        part = f"{base}p{partition_number}"
-        if not Path(part).exists():
-            raise RuntimeError(f"Partition device not found: {part}")
-        return part
+        part = Path(f"{loop_dev}p{partition_number}")
 
-    # Auto-pick: find first p1..p20 that exists
-    for n in range(1, 21):
-        part = f"{base}p{n}"
-        if Path(part).exists():
-            return part
-    raise RuntimeError("Could not find any partition device /dev/loopXpY (p1..p20).")
+        if not wait_for_path(part):
+            raise RuntimeError(
+                f"Partition device not found: {part}"
+            )
 
-def ext4_recover_from_device(partition_dev: str, output_dir: Path, restore_arg: str | None):
-    # IMPORTANT:
-    # - DO NOT mount the partition read-write during recovery.
+        return str(part)
+
+    for n in range(1, 129):
+        part = Path(f"{loop_dev}p{n}")
+
+        if wait_for_path(part, timeout=0.5):
+            fs_type = get_device_type(str(part))
+
+            if fs_type == "ext4":
+                return str(part)
+
+    fs_type = get_device_type(loop_dev)
+
+    if fs_type == "ext4":
+        return loop_dev
+
+    raise RuntimeError(
+        f"Could not find an ext4 partition in {loop_dev}, "
+        f"and the loop device itself is not recognized as ext4."
+    )
+
+
+def ext4_recover_from_device(
+    partition_dev: str,
+    output_dir: Path,
+    restore_all: bool,
+    restore_file: str | None,
+) -> Path:
     which_or_raise("extundelete")
+
     output_dir.mkdir(parents=True, exist_ok=True)
 
     out_base = output_dir / "extundelete_output"
     out_base.mkdir(parents=True, exist_ok=True)
 
-    cmd = ["sudo", "extundelete", partition_dev, "--output-dir", str(out_base)]
-    cmd.append(restore_arg if restore_arg else "--restore-all")
+    if is_mounted(partition_dev):
+        raise RuntimeError(
+            f"{partition_dev} appears to be mounted. "
+            "Unmount it before recovery."
+        )
+
+    if restore_all and restore_file:
+        raise ValueError(
+            "Choose either --restore-all or --restore-file, not both."
+        )
+
+    if not restore_all and not restore_file:
+        restore_all = True
+
+    cmd = root_cmd([
+        "extundelete",
+        partition_dev,
+        "--output-dir",
+        str(out_base),
+    ])
+
+    if restore_file:
+        cmd.extend([
+            "--restore-file",
+            restore_file,
+        ])
+    else:
+        cmd.append("--restore-all")
+
     run(cmd)
+
     return out_base
 
+
+ACTIVE_LOOP_DEVICE = None
+
+
+def handle_signal(signum, _frame):
+    global ACTIVE_LOOP_DEVICE
+
+    print(
+        f"\nReceived signal {signum}; cleaning up...",
+        file=sys.stderr,
+    )
+
+    cleanup_loop(ACTIVE_LOOP_DEVICE)
+    ACTIVE_LOOP_DEVICE = None
+
+    raise SystemExit(128 + signum)
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        description=(
+            "Repair MP4 files or recover deleted files from an ext4 "
+            "filesystem image."
+        )
+    )
+
+    parser.add_argument(
+        "--input",
+        "-i",
+        help="Input MP4 or ext4 image.",
+    )
+
+    parser.add_argument(
+        "--type",
+        "-t",
+        choices=[
+            "recover-ext4-img",
+            "repair-mp4",
+        ],
+        help="Operation to perform.",
+    )
+
+    parser.add_argument(
+        "--out",
+        "-o",
+        default="./recovered_output",
+        help="Output directory (default: ./recovered_output).",
+    )
+
+    parser.add_argument(
+        "--output-mp4",
+        help="Output MP4 path for repair-mp4.",
+    )
+
+    parser.add_argument(
+        "--partition",
+        type=int,
+        help="Partition number inside the image, e.g. 1 for /dev/loopXp1.",
+    )
+
+    restore_group = parser.add_mutually_exclusive_group()
+
+    restore_group.add_argument(
+        "--restore-all",
+        action="store_true",
+        help="Restore all recoverable deleted files.",
+    )
+
+    restore_group.add_argument(
+        "--restore-file",
+        help="Restore one specific deleted file path from ext4.",
+    )
+
+    return parser
+
+
 def main():
-    import argparse
-    ap = argparse.ArgumentParser(description="Repair MP4 or recover ext4 deleted files from an ext4 image using loop + extundelete.")
+    global ACTIVE_LOOP_DEVICE
 
-    ap.add_argument("--input", "-i", help="MP4 file path OR ext4 image file (.img/.raw/.dd)")
-    ap.add_argument("--type", "-t", choices=["recover-ext4-img", "repair-mp4"], help="recover-ext4-img=extundelete, repair-mp4=ffmpeg")
-    ap.add_argument("--out", "-o", help="Output directory (default: ./recovered_output)")
-    ap.add_argument("--restore", help="extundelete option: --restore-all OR --restore-file /path")
-    ap.add_argument("--output-mp4", help="Output mp4 path (only for repair-mp4)")
-    ap.add_argument("--partition", type=int, help="Partition number inside the image (e.g., 1 means /dev/loopXp1). If omitted, auto-picks first found.")
+    parser = build_parser()
+    args = parser.parse_args()
 
-    args = ap.parse_args()
-
-    # -------- USAGE EXAMPLES (copy/paste) --------
-    #
-    # Install dependencies:
-    #   sudo apt-get update
-    #   sudo apt-get install -y extundelete ffmpeg util-linux
-    #
-    # 1) Recover ALL deleted files from ext4 image:
-    #   sudo python3 recover.py --type recover-ext4-img --input disk.img --out recovered_output
-    #
-    # 2) If your ext4 is partition #2 inside the image:
-    #   sudo python3 recover.py --type recover-ext4-img --input disk.img --out recovered_output --partition 2
-    #
-    # 3) Recover a specific file:
-    #   sudo python3 recover.py --type recover-ext4-img --input disk.img --out recovered_output \
-    #     --partition 1 --restore "--restore-file /home/user/notes.txt"
-    #
-    # 4) Repair a damaged MP4:
-    #   python3 recover.py --type repair-mp4 --input bad.mp4 --out recovered_output --output-mp4 fixed.mp4
-    #
-    # ----------------------------------------------
-
-    out_dir = Path(args.out).expanduser().resolve() if args.out else (Path.cwd() / "recovered_output")
+    out_dir = Path(args.out).expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     input_path = args.input
-    mode = args.type
+    operation = args.type
 
-    if (not input_path or not mode) and tk is not None:
+    if (not input_path or not operation) and tk is not None:
         if not input_path:
-            input_path = pick_file_gui("Select input (MP4 or image)")
-        if not mode:
-            choice = ask_choice_gui("Choose action", "Recover ext4 image or repair mp4?", ["recover-ext4-img", "repair-mp4"])
-            mode = choice
-        if not input_path or not mode:
-            print("Missing input or action. Exiting.")
-            sys.exit(2)
+            input_path = pick_file_gui(
+                "Select input (MP4 or ext4 image)"
+            )
 
-    if not input_path or not mode:
-        raise SystemExit("Provide --input and --type (or run with GUI if tkinter exists).")
+        if not operation:
+            operation = ask_choice_gui(
+                "Choose action",
+                "Recover ext4 image or repair MP4?",
+                [
+                    "recover-ext4-img",
+                    "repair-mp4",
+                ],
+            )
 
-    if mode == "repair-mp4":
-        p = Path(input_path).expanduser().resolve()
-        if not p.exists():
-            raise FileNotFoundError(p)
-        which_or_raise("ffmpeg")
+    if not input_path or not operation:
+        parser.error(
+            "Provide --input and --type, or run where tkinter is available "
+            "for the GUI fallback."
+        )
 
-        output_mp4 = Path(args.output_mp4).expanduser().resolve() if args.output_mp4 else (out_dir / (p.stem + "_fixed.mp4"))
-        status = ffmpeg_repair_mp4(p, output_mp4)
-        print(f"MP4 repair done: {output_mp4} ({status})")
-        return
+    input_path_obj = Path(input_path).expanduser().resolve()
 
-    if mode == "recover-ext4-img":
-        which_or_raise("extundelete")
-        img = Path(input_path).expanduser().resolve()
-        if not img.exists():
-            raise FileNotFoundError(img)
+    if not input_path_obj.exists():
+        raise FileNotFoundError(input_path_obj)
 
-        restore_arg = args.restore.strip() if args.restore else None
+    if operation == "repair-mp4":
+        output_mp4 = (
+            Path(args.output_mp4).expanduser().resolve()
+            if args.output_mp4
+            else out_dir / f"{input_path_obj.stem}_fixed.mp4"
+        )
+
+        if input_path_obj == output_mp4:
+            raise ValueError("Refusing to overwrite the input MP4.")
+
+        status = ffmpeg_repair_mp4(
+            input_path_obj,
+            output_mp4,
+        )
+
+        print(
+            f"\nMP4 repair complete:\n"
+            f"  Output: {output_mp4}\n"
+            f"  Method: {status}"
+        )
+
+        return 0
+
+    if operation == "recover-ext4-img":
+        signal.signal(signal.SIGINT, handle_signal)
+        signal.signal(signal.SIGTERM, handle_signal)
+
+        if args.partition is not None and args.partition < 1:
+            raise ValueError(
+                "--partition must be 1 or greater."
+            )
 
         loop_dev = None
-        try:
-            loop_dev = setup_loop_from_img(img)  # e.g. /dev/loop7
-            part_dev = choose_partition(loop_dev, args.partition)
-            print(f"Using partition device: {part_dev}")
 
-            # Recovery
-            result_dir = ext4_recover_from_device(part_dev, out_dir, restore_arg=restore_arg)
-            print(f"ext4 recovery complete. Check: {result_dir}")
+        try:
+            loop_dev = setup_loop_from_img(input_path_obj)
+            ACTIVE_LOOP_DEVICE = loop_dev
+
+            partition_dev = choose_partition(
+                loop_dev,
+                args.partition,
+            )
+
+            print(f"\nUsing recovery device: {partition_dev}")
+
+            fs_type = get_device_type(partition_dev)
+
+            if fs_type != "ext4":
+                raise RuntimeError(
+                    f"{partition_dev} does not appear to be ext4 "
+                    f"(detected type: {fs_type!r})."
+                )
+
+            if is_mounted(partition_dev):
+                raise RuntimeError(
+                    f"{partition_dev} is mounted. "
+                    "Recovery must be performed on an unmounted filesystem."
+                )
+
+            result_dir = ext4_recover_from_device(
+                partition_dev=partition_dev,
+                output_dir=out_dir,
+                restore_all=args.restore_all,
+                restore_file=args.restore_file,
+            )
+
+            print(
+                f"\next4 recovery complete.\n"
+                f"  Recovered files: {result_dir}"
+            )
+
+            return 0
+
         finally:
-            if loop_dev:
-                cleanup_loop(loop_dev)
-        return
+            cleanup_loop(loop_dev)
+            ACTIVE_LOOP_DEVICE = None
+
+    raise RuntimeError(f"Unsupported operation: {operation}")
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        raise SystemExit(main())
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        raise SystemExit(130)
+    except Exception as exc:
+        print(f"\nERROR: {exc}", file=sys.stderr)
+        raise SystemExit(1)
