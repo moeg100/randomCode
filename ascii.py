@@ -1,5 +1,6 @@
 import time
 import os
+import pyfiglet
 
 # ANSI color codes
 colors = [
@@ -13,33 +14,22 @@ colors = [
 
 RESET = "\033[0m"
 
-ascii_text = r"""
-██╗  ██╗███████╗██╗     ██╗      ██████╗
-██║  ██║██╔════╝██║     ██║     ██╔═══██╗
-███████║█████╗  ██║     ██║     ██║   ██║
-██╔══██║██╔══╝  ██║     ██║     ██║   ██║
-██║  ██║███████╗███████╗███████╗╚██████╔╝
-╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝ ╚═════╝
+# Ask for text
+text = input("Enter text: ")
 
-██╗    ██╗ ██████╗ ██████╗ ██╗     ██████╗
-██║    ██║██╔═══██╗██╔══██╗██║     ██╔══██╗
-██║ █╗ ██║██║   ██║██████╔╝██║     ██║  ██║
-██║███╗██║██║   ██║██╔══██╗██║     ██║  ██║
-╚███╔███╔╝╚██████╔╝██║  ██║███████╗██████╔╝
- ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═════╝
-"""
-ascii_text_2 = r"""
-This is a text
-"""
+# Convert input into ASCII art
+ascii_text = pyfiglet.figlet_format(text, font="big")
+
 i = 0
 
 try:
     while True:
         os.system("cls" if os.name == "nt" else "clear")
+
         print(colors[i % len(colors)] + ascii_text + RESET)
-        time.sleep(2.15)
-        print(colors[i % len(colors)] + ascii_text_2 + RESET)
-        time.sleep(1.0)
+
+        time.sleep(1)
+
         i += 1
 
 except KeyboardInterrupt:
