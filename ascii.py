@@ -3,14 +3,13 @@ import os
 import pyfiglet
 
 # ANSI color codes
-colors = [
-    "\033[91m",  # Red
-    "\033[93m",  # Yellow
-    "\033[92m",  # Green
-    "\033[96m",  # Cyan
-    "\033[94m",  # Blue
-    "\033[95m",  # Magenta
-]
+colors = []
+
+for i in range(random.randint(1,10)):
+    colorNumber = random.randint(30, 99)
+    color = "\033[{}m".format(colorNumber)
+    colors.append(color) 
+
 
 RESET = "\033[0m"
 
