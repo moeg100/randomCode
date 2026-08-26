@@ -1,6 +1,7 @@
 import time
 import os
 import pyfiglet
+import random
 
 # ANSI color codes
 colors = []
