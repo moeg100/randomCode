@@ -21,7 +21,7 @@ BG_COLOR = (0, 0, 0)
 RECT_COLOR = (231, 55, 21)
 TARGET_COLOR = (66, 111, 232)
 
-BALL_RADIUS = 5
+BALL_RADIUS = 25
 GRAVITY = 0.5
 BOUNCE = -0.8
 
@@ -81,17 +81,17 @@ def erase_pixels_under_ball(surface, ball_pos, radius, bg_color):
                 if (x - bx) ** 2 + (y - by) ** 2 <= radius ** 2:
                     if surface.get_at((x, y))[:3] != bg_color:
                         surface.set_at((x, y), bg_color)
-                        
-          
+
+
 def triangle_area(triangle_pos):
     ax, ay = int(triangle_pos[0][0]), int(triangle_pos[0][1])
     bx, by = int(triangle_pos[1][0]), int(triangle_pos[1][1])
     cx, cy = int(triangle_pos[2][0]), int(triangle_pos[2][1])
-    
+
     area = 0.5 * abs(ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
-    
+
     return area
-                  
+
 def erase_pixels_under_triangle(surface, triangle_pos, bg_color):
     ax, ay = triangle_pos[0]
     bx, by = triangle_pos[1]
@@ -105,7 +105,7 @@ def erase_pixels_under_triangle(surface, triangle_pos, bg_color):
 
 
     total_area = triangle_area(triangle_pos)
-    
+
     if total_area == 0:
         return
 
@@ -116,9 +116,9 @@ def erase_pixels_under_triangle(surface, triangle_pos, bg_color):
             p = [[x, y], triangle_pos[1], triangle_pos[2]]
             p2 = [triangle_pos[0], [x, y], triangle_pos[2]]
             p3 = [triangle_pos[0], triangle_pos[1], [x, y]]
-            
+
             sub_area_sum = triangle_area(p) + triangle_area(p2) + triangle_area(p3)
-            
+
 
             if abs(sub_area_sum - total_area) < 0.1:
                 if surface.get_at((x, y))[:3] != bg_color:
@@ -158,14 +158,14 @@ def keyEvent():
     if keys[pygame.K_r]:
         ball_two.x = 250
         ball_two.y = 250
-        
+
     if keys[pygame.K_l]:
         triangle_angle = -ROTATION_SPEED*0.03
         for point in SMALL_TRIANGLE:
             rotate(triangle_angle, point, origin=TRIANGLE_ORIGIN)
-     
+
     if keys[pygame.K_n]:
-        TRIANGLE_ORIGIN = [rd.randint(110, 250), rd.randint(125, 250)]
+        TRIANGLE_ORIGIN = [rd.randint(110, 250), rd.randint(125, 265)]
 
 
 
@@ -259,8 +259,8 @@ while running:
     )
 
     keyEvent()
-    erase_pixels_under_ball(pixel_surface, ball_two, BALL_RADIUS, BG_COLOR)
     erase_pixels_under_ball(pixel_surface, ball_one, BALL_RADIUS, BG_COLOR)
+    erase_pixels_under_ball(pixel_surface, ball_two, BALL_RADIUS, BG_COLOR)
 
     ball_one.x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_one.x))
     ball_one.y = max(BALL_RADIUS, min(SCREEN_HEIGHT - BALL_RADIUS, ball_one.y))
