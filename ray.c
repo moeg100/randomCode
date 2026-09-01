@@ -25,7 +25,9 @@ int main(void)
         YELLOW,
         ORANGE,
         RED,
-        PINK
+        PINK,
+        PURPLE,
+        BLACK
     };
 
     int colorIndex = 0;
@@ -35,6 +37,7 @@ int main(void)
     Rectangle startButton = { 100, 330, 140, 50 };
     Rectangle resetButton = { 330, 330, 140, 50 };
     Rectangle colorButton = { 560, 330, 140, 50 };
+    Rectangle timeButton =  {50, 250, 140, 50 };
 
     while (!WindowShouldClose())
     {
@@ -62,7 +65,6 @@ int main(void)
             {
                 running = !running;
             }
-
             // Reset button
             if (CheckCollisionPointRec(mouse, resetButton))
             {
@@ -81,6 +83,11 @@ int main(void)
                     colorIndex = 0;
                 }
             }
+
+            if (CheckCollisionPointRec(mouse, timeButton)){
+              timer += 5.0f;
+
+          }
         }
 
         // -------------------------
@@ -89,7 +96,7 @@ int main(void)
 
         BeginDrawing();
 
-        ClearBackground(BLACK);
+        ClearBackground(GRAY);
 
         // Title
         DrawText("SIMPLE RAYLIB TIMER", 250, 40, 30, RAYWHITE);
@@ -137,6 +144,9 @@ int main(void)
         // Color button
         DrawRectangleRec(colorButton, DARKGRAY);
         DrawText("COLOR", 595, 345, 20, WHITE);
+
+        DrawRectangleRec(timeButton, DARKGRAY);
+        DrawText("TIME", 90, 260, 20, WHITE);
 
         EndDrawing();
     }
