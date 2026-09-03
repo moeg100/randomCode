@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(void)
 {
@@ -11,7 +12,7 @@ int main(void)
 
     // Timer settings
     float timer = 10.0f;
-    const float startTime = 10.0f;
+    float startTime = 10.0f;
     bool running = false;
 
     // Counter
@@ -32,12 +33,13 @@ int main(void)
 
     int colorIndex = 0;
     int colorCount = sizeof(timerColors) / sizeof(timerColors[0]);
+    int backgroundIndex = GetRandomValue(0, colorCount - 1); // or rand() % colorCount
 
     // Buttons
     Rectangle startButton = { 100, 330, 140, 50 };
     Rectangle resetButton = { 330, 330, 140, 50 };
     Rectangle colorButton = { 560, 330, 140, 50 };
-    Rectangle timeButton =  {50, 250, 140, 50 };
+    Rectangle timeButton =  {100, 250, 140, 50 };
 
     while (!WindowShouldClose())
     {
@@ -82,11 +84,13 @@ int main(void)
                 {
                     colorIndex = 0;
                 }
+                backgroundIndex = GetRandomValue(0, colorCount - 1); // update background only now
+
             }
 
             if (CheckCollisionPointRec(mouse, timeButton)){
               timer += 5.0f;
-
+              startTime = timer;
           }
         }
 
@@ -96,7 +100,7 @@ int main(void)
 
         BeginDrawing();
 
-        ClearBackground(GRAY);
+        ClearBackground(timerColors[backgroundIndex]);
 
         // Title
         DrawText("SIMPLE RAYLIB TIMER", 250, 40, 30, RAYWHITE);
@@ -146,7 +150,7 @@ int main(void)
         DrawText("COLOR", 595, 345, 20, WHITE);
 
         DrawRectangleRec(timeButton, DARKGRAY);
-        DrawText("TIME", 90, 260, 20, WHITE);
+        DrawText("TIME", 140, 260, 20, WHITE);
 
         EndDrawing();
     }
